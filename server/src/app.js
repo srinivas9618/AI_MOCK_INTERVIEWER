@@ -43,7 +43,6 @@ app.use(express.json({ limit: '10mb' })); //express.json() is a builtin middlewa
 // /api/auth      → authentication routes
 // /api/interview → interview routes (start, answer, feedback)
 // /api/resume    → resume upload and parsing routes
-// /api/history   → interview history routes
 app.use('/api', router);
 
 // ============================================

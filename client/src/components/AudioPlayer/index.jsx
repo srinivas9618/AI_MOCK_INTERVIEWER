@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function AudioPlayer({ audioBase64, autoPlay, onEnded }) {
   const [audioInstance, setAudioInstance] = useState(null);
+  const onEndedRef = useRef(onEnded);
+  onEndedRef.current = onEnded;
 
   useEffect(() => {
     if (!audioBase64) return;
@@ -22,7 +24,7 @@ function AudioPlayer({ audioBase64, autoPlay, onEnded }) {
     const audio = new Audio(newUrl);
 
     audio.onended = () => {
-      if (onEnded) onEnded();
+      if (onEndedRef.current) onEndedRef.current();
     };
 
     setAudioInstance(audio);
@@ -30,7 +32,6 @@ function AudioPlayer({ audioBase64, autoPlay, onEnded }) {
     if (autoPlay) {
       audio.play().catch((err) => {
         console.error('Audio autoplay failed:', err.message);
-        if (onEnded) onEnded();
       });
     }
 

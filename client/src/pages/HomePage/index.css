@@ -2,178 +2,229 @@
   background-color: #f8fafc;
   min-height: 100vh;
   padding: 32px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.home-welcome {
+.home-header {
   margin-bottom: 32px;
 }
 
-.home-welcome-heading {
+.home-title {
   font-family: 'Bree Serif', serif;
-  font-size: 36px;
+  font-size: 34px;
   color: #0f172a;
   margin: 0 0 8px 0;
 }
 
-.home-welcome-subtitle {
+.home-subtitle {
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
   color: #64748b;
   margin: 0;
 }
 
-.home-stats-row {
-  display: flex;
-  gap: 20px;
+.home-step-section {
   margin-bottom: 32px;
 }
 
-.home-stat-card {
+.home-step-heading {
+  font-family: 'Bree Serif', serif;
+  font-size: 20px;
+  color: #0f172a;
+  margin: 0 0 20px 0;
+}
+
+.home-roles-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.home-role-card {
+  flex: 1 1 200px;
+  max-width: 100%;
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.home-role-selected {
+  border-color: #2563eb;
+  background-color: #dbeafe;
+}
+
+.home-role-icon {
+  font-size: 28px;
+  color: #2563eb;
+}
+
+.home-role-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.home-role-desc {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.home-difficulty-row {
+  display: flex;
+  gap: 16px;
+}
+
+.home-difficulty-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-
-.home-stat-icon {
-  font-size: 24px;
-  color: #2563eb;
-}
-
-.home-stat-number {
-  font-family: 'Bree Serif', serif;
-  font-size: 48px;
-  color: #2563eb;
-  line-height: 1;
-}
-
-.home-stat-label {
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  color: #64748b;
-}
-
-.home-cta-container {
-  margin-bottom: 40px;
-}
-
-.home-start-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  background-color: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-family: 'Roboto', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
   cursor: pointer;
+  text-align: center;
 }
 
-.home-start-icon {
+.home-difficulty-selected {
+  border-color: #2563eb;
+  background-color: #dbeafe;
+}
+
+.home-difficulty-stars {
+  display: flex;
+  gap: 4px;
   font-size: 20px;
 }
 
-.home-recent-section {
-  margin-top: 16px;
+.home-star-filled {
+  color: #2563eb;
 }
 
-.home-section-header {
+.home-star-empty {
+  color: #cbd5e1;
+}
+
+.home-difficulty-label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.home-difficulty-desc {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.home-resume-area {
+  display: flex;
+  justify-content: center;
+}
+
+.home-upload-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 540px;
+  text-align: center;
+}
+
+.home-upload-icon {
+  font-size: 40px;
+  color: #64748b;
+}
+
+.home-upload-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+.home-resume-uploaded {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 540px;
 }
 
-.home-section-heading {
-  font-family: 'Bree Serif', serif;
-  font-size: 24px;
-  color: #0f172a;
-  margin: 0;
-}
-
-.home-view-all-btn {
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-
-.home-loading-state {
+.home-resume-info {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 48px 0;
-  gap: 16px;
-}
-
-.home-loading-text {
-  font-family: 'Roboto', sans-serif;
-  font-size: 16px;
-  color: #64748b;
-  margin: 0;
-}
-
-.home-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 0;
   gap: 12px;
 }
 
-.home-empty-icon {
-  font-size: 48px;
-  color: #94a3b8;
+.home-resume-file-icon {
+  font-size: 24px;
+  color: #2563eb;
 }
 
-.home-empty-heading {
-  font-family: 'Bree Serif', serif;
-  font-size: 20px;
+.home-resume-name {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
   color: #0f172a;
+  font-weight: 600;
   margin: 0;
 }
 
-.home-empty-text {
+.home-change-resume-btn {
+  padding: 8px 16px;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
-  color: #64748b;
-  margin: 0;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.home-empty-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+.home-start-btn {
+  width: 100%;
+  padding: 14px 24px;
   background-color: #2563eb;
   color: #ffffff;
   border: none;
   border-radius: 8px;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 8px;
 }
 
-.home-interviews-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+.home-start-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
@@ -181,11 +232,11 @@
     padding: 24px 16px;
   }
 
-  .home-stats-row {
+  .home-difficulty-row {
     flex-direction: column;
   }
 
-  .home-welcome-heading {
+  .home-title {
     font-size: 28px;
   }
 }

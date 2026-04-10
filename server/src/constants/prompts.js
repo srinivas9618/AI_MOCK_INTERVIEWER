@@ -61,12 +61,37 @@ IMPORTANT GUIDELINES:
 Return ONLY your acknowledgment text, no JSON, no markdown. Do NOT include the next question.
 `;
 
-export const FEEDBACK_PROMPT = (role, conversationHistory) => `
-You are an expert interview evaluator. Analyze this complete ${role} interview and provide detailed feedback.
+export const formatQuestionsForFeedback = (questions) => {
+  if (!questions || questions.length === 0) return '(No question list stored for this session.)';
+  return questions
+    .map((q, i) => `${i + 1}. [${q.type || 'question'}] ${q.text || ''}`)
+    .join('\n');
+};
 
-COMPLETE INTERVIEW CONVERSATION:
+export const FEEDBACK_PROMPT = (
+  role,
+  conversationHistory,
+  questionsOutline,
+  resumeSnippet
+) => `
+You are an expert interview evaluator. You must evaluate ONLY this one interview session.
+
+GROUND RULES (critical):
+- Use ONLY the transcript below. Do NOT invent projects, technologies, or answers the candidate did not say.
+- If the transcript is short or answers were vague, say that explicitly and score conservatively.
+- The resume excerpt is for role/context alignment ONLY — still judge performance from what they actually said in the transcript.
+- Do NOT reference other interviews, other candidates, or assumed history outside this transcript.
+
+ROLE: ${role}
+
+PLANNED QUESTIONS FOR THIS SESSION (context only; evaluate what actually happened in the transcript):
+${questionsOutline}
+
+RESUME EXCERPT (context only, max ~2000 chars):
+${resumeSnippet || '(No resume text stored.)'}
+
+COMPLETE INTERVIEW TRANSCRIPT (sole source of truth for scoring):
 ${conversationHistory}
-
 
 IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, no extra text.
 Address the candidate directly using "you" and "your".
@@ -103,15 +128,17 @@ Use this EXACT JSON structure:
   "finalAssessment": "A 2-3 sentence overall assessment of the candidate's performance."
 }
 
-Be specific - reference ACTUAL things they said during the interview.
-Score each category between 0-100 based on their actual performance.
+Be specific — quote or paraphrase ONLY what appears in the transcript. If something was not discussed, do not score it as if it was.
+Score each category between 0-100 based on their actual performance in this transcript only.
 `;
 
 export const buildConversationHistory = (messages) => {
   if (!messages || messages.length === 0) return 'No conversation yet.';
 
-  // Use the last 20 messages to keep within context limits
-  const recentMessages = messages.slice(-20);
+  // Keep more of the session for feedback; trim from the start if extremely long
+  const maxMessages = 80;
+  const recentMessages =
+    messages.length > maxMessages ? messages.slice(-maxMessages) : messages;
 
   return recentMessages
     .map((msg) => {
