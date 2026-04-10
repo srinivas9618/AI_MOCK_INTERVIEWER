@@ -273,8 +273,6 @@ select {
 .app-shell {
   min-height: 100vh;
   background-color: #f8fafc;
-  display: flex;
-  flex-direction: column;
 }
 
 .protected-shell {

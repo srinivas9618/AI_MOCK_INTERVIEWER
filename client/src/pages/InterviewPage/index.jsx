@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   getInterview,
-  startInterview,
   submitTextAnswer,
   transcribeAudio,
   endInterview,
@@ -49,10 +48,6 @@ function InterviewPage() {
   const [interviewerText, setInterviewerText] = useState('');
   const [farewellMessage, setFarewellMessage] = useState('');
 
-  /** Only true after interviewer audio (or "read delay") finishes — blocks recording during TTS. */
-  const [allowAnswer, setAllowAnswer] = useState(false);
-  const isFarewellPhaseRef = useRef(false);
-
   // TODO: Add useEffect to load interview data using getInterview(id)
 
   // TODO: Implement handleAudioEnded - transition to listening state after audio finishes
@@ -74,34 +69,7 @@ function InterviewPage() {
   useEffect(() => {
   const loadInterview = async () => {
     try {
-      let interviewId = id;
-      let initialAudio = location.state?.audio || null;
-
-      // If user just clicked "Start Interview", we land on /interview with state
-      // and must create the interview session first.
-      if (!interviewId) {
-        const role = location.state?.role;
-        const resumeText = location.state?.resumeText;
-        const totalQuestions = location.state?.totalQuestions;
-
-        if (!role || !resumeText) {
-          toast.error('Missing interview setup details. Please start again.');
-          navigate('/');
-          return;
-        }
-
-        const created = await startInterview(role, resumeText, totalQuestions);
-        interviewId = created.interviewId;
-        initialAudio = created.audio || null;
-
-        // Replace URL with the real interview id.
-        navigate(`/interview/${interviewId}`, {
-          replace: true,
-          state: { audio: initialAudio },
-        });
-      }
-
-      const data = await getInterview(interviewId);
+      const data = await getInterview(id);
       setCurrentQuestionNum(data.currentQuestion);
       setTotalQuestions(data.totalQuestions);
 
@@ -119,25 +87,17 @@ function InterviewPage() {
         setInterviewerText(interviewerMsgs[interviewerMsgs.length - 1].content);
       }
 
-      isFarewellPhaseRef.current = false;
-
       if (data.currentQuestion === 1) {
-        const audio = initialAudio || data.lastAudio;
+        const audio = location.state?.audio || data.lastAudio;
         if (audio) {
           setCurrentAudio(audio);
           setInterviewerState(STATE_SPEAKING);
-          setAllowAnswer(false);
         } else {
           setInterviewerState(STATE_SPEAKING);
-          setAllowAnswer(false);
-          setTimeout(() => {
-            setInterviewerState(STATE_LISTENING);
-            setAllowAnswer(true);
-          }, 3000);
+          setTimeout(() => setInterviewerState(STATE_LISTENING), 3000);
         }
       } else {
         setInterviewerState(STATE_LISTENING);
-        setAllowAnswer(true);
       }
     } catch (error) {
       toast.error('Failed to load interview');
@@ -150,11 +110,8 @@ function InterviewPage() {
 }, [id, navigate, location.state]);
 
 const handleAudioEnded = () => {
-  if (isFarewellPhaseRef.current) return;
-  setTimeout(() => {
-    setInterviewerState(STATE_LISTENING);
-    setAllowAnswer(true);
-  }, 3000);
+  if (interviewerState === STATE_FAREWELL) return;
+  setTimeout(() => setInterviewerState(STATE_LISTENING), 3000);
 };
 
 const resetAnswerFields = () => {
@@ -167,9 +124,7 @@ const processAnswerResult = (result) => {
     const farewellText =
       'Thank you for completing the interview! I really enjoyed our conversation. Let me prepare your detailed feedback report...';
     setFarewellMessage(farewellText);
-    isFarewellPhaseRef.current = true;
     setInterviewerState(STATE_FAREWELL);
-    setAllowAnswer(false);
 
     if (result.audio) {
       setTimeout(() => {
@@ -190,13 +145,9 @@ const processAnswerResult = (result) => {
   setAudioKey((prev) => prev + 1);
   resetAnswerFields();
 
-  setAllowAnswer(false);
   setInterviewerState(STATE_SPEAKING);
   if (!result.audio) {
-    setTimeout(() => {
-      setInterviewerState(STATE_LISTENING);
-      setAllowAnswer(true);
-    }, 3000);
+    setTimeout(() => setInterviewerState(STATE_LISTENING), 3000);
   }
 };
 
@@ -209,7 +160,6 @@ const submitAndProcess = async (answerText) => {
   } catch (error) {
     toast.error(error.response?.data?.message || 'Failed to submit answer');
     setInterviewerState(STATE_LISTENING);
-    setAllowAnswer(true);
   } finally {
     setSubmitting(false);
   }
@@ -220,28 +170,16 @@ const handleRecordingComplete = async (audioBlob) => {
   setInterviewerState(STATE_THINKING);
   try {
     const data = await transcribeAudio(audioBlob);
-    const transcript = (data?.text || '').trim();
-    const isNoSpeech =
-      !transcript ||
-      transcript.startsWith('[') ||
-      transcript.toLowerCase() === 'silence' ||
-      transcript.length < 3;
+    const answerText =
+      data.text && !data.text.startsWith('[')
+        ? data.text
+        : 'The candidate provided a verbal response.';
 
-    if (isNoSpeech) {
-      toast.error(
-        "I couldn't detect any speech in that recording. Please re-record, or use the text input."
-      );
-      setInterviewerState(STATE_LISTENING);
-      setAllowAnswer(true);
-      return;
-    }
-
-    const result = await submitTextAnswer(id, transcript);
+    const result = await submitTextAnswer(id, answerText);
     processAnswerResult(result);
   } catch (error) {
     toast.error(error.response?.data?.message || 'Failed to submit answer');
     setInterviewerState(STATE_LISTENING);
-    setAllowAnswer(true);
   } finally {
     setSubmitting(false);
   }
@@ -268,27 +206,8 @@ const handleEndInterview = async () => {
   if (loading) {
     return (
       <div className="interview-loading-state">
-        <div className="spinner-border interview-loading-spinner" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <h2 className="interview-loading-heading">Preparing your interview</h2>
-        <p className="interview-loading-text">
-          Loading your session and questions…
-        </p>
-        <div className="interview-loading-steps">
-          <div className="interview-loading-step">
-            <BsCheckCircleFill className="interview-loading-step-icon-active" />
-            <span className="interview-loading-step-label">Connecting</span>
-          </div>
-          <div className="interview-loading-step">
-            <BsCheckCircleFill className="interview-loading-step-icon-active" />
-            <span className="interview-loading-step-label">Loading conversation</span>
-          </div>
-          <div className="interview-loading-step">
-            <BsCheckCircleFill className="interview-loading-step-icon-pending" />
-            <span className="interview-loading-step-label">Ready to begin</span>
-          </div>
-        </div>
+        <div className="spinner-border spinner-border-sm" role="status" />
+        <p className="interview-loading-text">Loading interview...</p>
       </div>
     );
   }
@@ -298,11 +217,10 @@ const handleEndInterview = async () => {
   const isThinking = interviewerState === STATE_THINKING;
   const isListening = interviewerState === STATE_LISTENING;
   const isFarewell = interviewerState === STATE_FAREWELL;
-  const canAnswer = isListening && allowAnswer;
 
   return (
     <div className="interview-layout">
-      <header className="interview-topbar">
+      <div className="interview-topbar">
         <div className="topbar-left">
           <span className="topbar-question-label">
             Question {currentQuestionNum} of {totalQuestions}
@@ -315,20 +233,19 @@ const handleEndInterview = async () => {
           </div>
         </div>
         <div className="topbar-right">
-          {!isFarewell && !isThinking && (
+          {currentQuestionNum >= totalQuestions && isListening && (
             <button
-              className={`topbar-end-btn ${ending || submitting ? 'topbar-end-btn-disabled' : ''}`}
+              className={`topbar-end-btn ${ending ? 'topbar-end-btn-disabled' : ''}`}
               onClick={handleEndInterview}
-              disabled={ending || submitting}
+              disabled={ending}
             >
               {ending ? 'Generating Feedback...' : 'End Interview'}
             </button>
           )}
         </div>
-      </header>
+      </div>
 
-      <div className="interview-main">
-      <section className="interviewer-panel" aria-label="Interviewer">
+      <div className="interviewer-panel">
         <div className="interviewer-avatar-block">
           <div className="interviewer-avatar-circle">
             <FaUserTie className="interviewer-avatar-icon" />
@@ -386,11 +303,10 @@ const handleEndInterview = async () => {
         {!isFarewell && !isThinking && interviewerText && (
           <div className="interviewer-message-block">
             <p className="interviewer-message-text">{interviewerText}</p>
-            {canAnswer && currentAudio && (
+            {isListening && currentAudio && (
               <button
                 className="interviewer-hear-again-link"
                 onClick={() => {
-                  setAllowAnswer(false);
                   setAudioKey((prev) => prev + 1);
                   setInterviewerState(STATE_SPEAKING);
                 }}
@@ -410,11 +326,13 @@ const handleEndInterview = async () => {
             <p className="question-callout-text">{currentQuestion.text}</p>
           </div>
         )}
-      </section>
+      </div>
 
-      <section className="answer-panel" aria-label="Your answer">
-        {canAnswer && (
+      <div className="answer-panel">
+        {isListening && (
           <>
+            {(
+              <>
                 <div className="voice-answer-block">
                   <div className="voice-block-header">
                     <div>
@@ -486,6 +404,8 @@ const handleEndInterview = async () => {
                     </div>
                   )}
                 </div>
+              </>
+            )}
           </>
         )}
 
@@ -512,10 +432,9 @@ const handleEndInterview = async () => {
             </p>
           </div>
         )}
-      </section>
       </div>
 
-      <footer className="interview-timeline">
+      <div className="interview-timeline">
         <div className="timeline-dots-row">
           {Array.from({ length: totalQuestions }, (_, i) => {
             const qNum = i + 1;
@@ -535,7 +454,7 @@ const handleEndInterview = async () => {
             );
           })}
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

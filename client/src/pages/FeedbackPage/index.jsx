@@ -172,13 +172,18 @@ function FeedbackPage() {
         <div className="feedback-actions-row">
           <button
             className="feedback-btn-primary"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/setup')}
           >
             <BsArrowRepeat className="feedback-btn-icon" />
             Retake Interview
           </button>
+          <button
+            className="feedback-btn-outline"
+            onClick={() => navigate('/')}
+          >
+            Back to Dashboard
+          </button>
         </div>
-
       </div>
     </div>
   );

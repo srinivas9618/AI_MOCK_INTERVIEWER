@@ -7,7 +7,6 @@ import {
   INTERVIEW_GREETING_PROMPT,
   FOLLOW_UP_PROMPT,
   FEEDBACK_PROMPT,
-  formatQuestionsForFeedback,
   buildConversationHistory,
 } from '../constants/prompts.js';
 
@@ -142,19 +141,12 @@ export const endInterview = async (interviewId, userId) => {
   }
 
   const conversationHistory = buildConversationHistory(interview.messages);
-  const questionsOutline = formatQuestionsForFeedback(interview.questions);
-  const resumeSnippet =
-    (interview.resumeText || '').slice(0, 2000).trim() ||
-    '(No resume text stored.)';
 
-  const feedbackPrompt = FEEDBACK_PROMPT(
-    interview.role,
-    conversationHistory,
-    questionsOutline,
-    resumeSnippet
-  );
+ 
+
+  const feedbackPrompt = FEEDBACK_PROMPT(interview.role, conversationHistory);
   const feedbackResponse = await askGemini(feedbackPrompt);
-  const feedback = await parseGeminiJSON(feedbackResponse);
+  const feedback = parseGeminiJSON(feedbackResponse);
 
   interview.feedback = feedback;
   interview.overallScore = feedback.overallScore || 0;

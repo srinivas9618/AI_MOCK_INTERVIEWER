@@ -9,7 +9,7 @@ try{
 
     const extractedText =await resumeService.parseResume(req.file.buffer)
 
-    const resume = await resumeService.saveResume(req.user._id, req.file.originalname, extractedText)
+    const resume = await resumeService.saveResume(req.user_id, req.file.originalname, extractedText)
 
     return res.json({success: true, data:{
         resumeId: resume._id,
@@ -28,9 +28,8 @@ export const getResume = async(req, res, next)=>{
     try{
         const resume = await resumeService.getUserResume(req.user._id)
         if(!resume){
-            return res.json({
-                success:true,
-                data: null,
+            return res.status(400).json({
+                success:false,
                 message: "No resume found. Please upload a resume."
             })
         }

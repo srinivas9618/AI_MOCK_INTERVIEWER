@@ -3,8 +3,10 @@ import LoginPage from './pages/LoginPage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
+import InterviewSetupPage from './pages/InterviewSetupPage';
 import InterviewPage from './pages/InterviewPage';
 import FeedbackPage from './pages/FeedbackPage';
+import HistoryPage from './pages/HistoryPage';
 
 function App() {
   return (
@@ -22,11 +24,11 @@ function App() {
           }
         />
         <Route
-          path="/interview"
+          path="/setup"
           element={
             <ProtectedRoute>
               <Navbar />
-              <InterviewPage />
+              <InterviewSetupPage />
             </ProtectedRoute>
           }
         />
@@ -45,6 +47,15 @@ function App() {
             <ProtectedRoute>
               <Navbar />
               <FeedbackPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <HistoryPage />
             </ProtectedRoute>
           }
         />
